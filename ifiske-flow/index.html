@@ -1,0 +1,515 @@
+<title>Fiskekort Snabbköp</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: pitch column on the left, a live phone on the right; on phones the prototype runs full width first, pitch below. */
+:root {
+  --lake: #0f3b47;        /* deep lake water */
+  --lake-2: #1d5a69;
+  --reed: #eef2ef;        /* pale reed / birch ground */
+  --paper: #ffffff;
+  --ink: #12262b;
+  --muted: #5b6f73;
+  --line: #d6dfdc;
+  --float: #e8462a;       /* bobber red, used for the one primary action */
+  --float-ink: #ffffff;
+  --ok: #1f8a5b;
+  --chip: #e2ebe8;
+  --phone-bg: #f6f8f7;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --lake: #8fd0dc; --lake-2: #5fb0c0; --reed: #0c1a1e; --paper: #13252a; --ink: #e6efed;
+  --muted: #93a7aa; --line: #264046; --float: #ff6a4d; --float-ink: #1a0a06; --ok: #4fc58f;
+  --chip: #1b3238; --phone-bg: #0f1f23; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --lake: #8fd0dc; --lake-2: #5fb0c0; --reed: #0c1a1e; --paper: #13252a; --ink: #e6efed;
+  --muted: #93a7aa; --line: #264046; --float: #ff6a4d; --float-ink: #1a0a06; --ok: #4fc58f;
+  --chip: #1b3238; --phone-bg: #0f1f23; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--reed); color: var(--ink); font: 400 15px/1.5 var(--body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 56px; align-items: start; }
+@media (max-width: 900px) { .wrap { grid-template-columns: minmax(0,1fr); gap: 32px; padding-block: 20px 48px; } .stage { order: -1; } }
+
+/* ---------- pitch column ---------- */
+.eyebrow { font: 600 12px/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 800 clamp(34px, 5vw, 56px)/1.02 var(--display); letter-spacing: -.02em; margin: 12px 0 16px; text-wrap: balance; color: var(--ink); }
+h1 em { font-style: normal; color: var(--float); }
+.lede { font-size: 18px; max-width: 34em; color: var(--ink); margin: 0 0 28px; }
+.disclaimer { font-size: 13px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 12px; max-width: 40em; margin: 0 0 36px; }
+h2 { font: 700 20px/1.2 var(--display); margin: 0 0 14px; text-wrap: balance; }
+section + section { margin-top: 36px; }
+.steps { display: grid; gap: 0; counter-reset: s; margin: 0; padding: 0; list-style: none; }
+.steps li { display: grid; grid-template-columns: 36px minmax(0,1fr); gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+.steps li:last-child { border-bottom: 1px solid var(--line); }
+.steps li::before { counter-increment: s; content: counter(s); font: 700 14px/28px var(--mono); width: 28px; height: 28px; text-align: center; border-radius: 50%; background: var(--lake); color: var(--reed); }
+.steps b { display: block; font-weight: 600; }
+.steps span { color: var(--muted); font-size: 14px; }
+.principles { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 20px 28px; }
+@media (max-width: 560px) { .principles { grid-template-columns: minmax(0,1fr); } }
+.principles div b { display: block; font-weight: 600; margin-bottom: 2px; }
+.principles div span { font-size: 14px; color: var(--muted); }
+table.kpi { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.kpi th, table.kpi td { text-align: left; padding: 10px 8px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.kpi th { font: 600 12px/1.2 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+table.kpi td:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tablebox { overflow-x: auto; }
+
+/* ---------- phone ---------- */
+.stage { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); }
+@media (max-width: 900px) { .stage { position: static; } }
+.phone { width: 100%; max-width: 400px; margin: 0 auto; height: 800px; max-height: calc(100vh - 48px); min-height: 640px;
+  background: var(--phone-bg); border-radius: 36px; border: 10px solid var(--ink); position: relative; overflow: hidden;
+  display: flex; flex-direction: column; box-shadow: 0 30px 60px -30px rgba(15,59,71,.45); }
+@media (max-width: 900px) { .phone { border-width: 6px; border-radius: 26px; height: 760px; max-height: none; } }
+.bar { display: flex; align-items: center; gap: 10px; padding: 14px 18px 10px; background: var(--paper); border-bottom: 1px solid var(--line); }
+.bar .back { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 18px; cursor: pointer; display: grid; place-items: center; }
+.bar .back[disabled] { visibility: hidden; }
+.bar .ttl { font: 700 16px/1.2 var(--display); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prog { display: flex; gap: 4px; }
+.prog i { width: 18px; height: 4px; border-radius: 2px; background: var(--line); }
+.prog i.on { background: var(--lake-2); }
+.screen { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.cta-bar { padding: 12px 18px calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--paper); border-top: 1px solid var(--line); display: grid; gap: 8px; }
+.btn { appearance: none; border: 0; border-radius: 14px; padding: 16px; font: 700 16px/1 var(--body); cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; }
+.btn.primary { background: var(--float); color: var(--float-ink); }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn:focus-visible, .back:focus-visible, .opt:focus-visible, input:focus-visible, .chip:focus-visible, .day:focus-visible, .pay:focus-visible, .row:focus-visible { outline: 3px solid var(--lake-2); outline-offset: 2px; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.fine { font-size: 12px; color: var(--muted); text-align: center; }
+
+.h { font: 800 26px/1.1 var(--display); letter-spacing: -.01em; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: -8px 0 0; font-size: 14px; }
+.label { font: 600 11px/1 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+.search { display: flex; align-items: center; gap: 10px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 0 14px; }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; font: 500 16px var(--body); color: var(--ink); padding: 15px 0; }
+.search input:focus { outline: none; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 999px; padding: 8px 12px; font: 600 13px var(--body); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--lake); color: var(--reed); border-color: var(--lake); }
+
+.again { background: var(--lake); color: var(--reed); border-radius: 16px; padding: 14px 16px; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 12px; align-items: center; cursor: pointer; border: 0; text-align: left; font: inherit; width: 100%; }
+.again small { opacity: .75; font-size: 12px; grid-column: 1; }
+.again b { font: 700 16px var(--display); grid-column: 1; }
+.again span { grid-row: 1 / span 2; grid-column: 2; font: 700 14px var(--body); background: var(--float); color: var(--float-ink); padding: 8px 12px; border-radius: 10px; }
+
+.list { display: grid; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 2px 12px; padding: 14px 16px; border: 0; background: transparent; text-align: left; font: inherit; color: var(--ink); cursor: pointer; }
+.row + .row { border-top: 1px solid var(--line); }
+.row b { font-weight: 600; }
+.row small { color: var(--muted); font-size: 13px; grid-column: 1; }
+.row .from { grid-row: 1 / span 2; grid-column: 2; align-self: center; font: 600 14px var(--body); color: var(--muted); font-variant-numeric: tabular-nums; }
+.row .from strong { color: var(--ink); }
+.empty { padding: 18px; color: var(--muted); font-size: 14px; }
+
+.area-head { display: grid; gap: 6px; }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font: 600 12px var(--body); background: var(--chip); color: var(--ink); padding: 4px 8px; border-radius: 6px; }
+.opts { display: grid; gap: 8px; }
+.opt { display: grid; grid-template-columns: 22px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--paper); cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
+.opt .dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; }
+.opt[aria-checked="true"] { border-color: var(--lake-2); box-shadow: inset 0 0 0 1px var(--lake-2); }
+.opt[aria-checked="true"] .dot { border-color: var(--lake-2); }
+.opt[aria-checked="true"] .dot::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--lake-2); }
+.opt b { font-weight: 600; display: block; }
+.opt small { color: var(--muted); font-size: 13px; }
+.opt .p { font: 700 17px var(--body); font-variant-numeric: tabular-nums; }
+.badge { font: 700 10px/1 var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ok); margin-left: 6px; vertical-align: 2px; }
+.days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.day { flex: 0 0 auto; min-width: 62px; padding: 10px 8px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--paper); color: var(--ink); text-align: center; cursor: pointer; font: inherit; }
+.day b { display: block; font: 700 18px/1.1 var(--display); font-variant-numeric: tabular-nums; }
+.day small { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.day[aria-checked="true"] { background: var(--lake); border-color: var(--lake); color: var(--reed); }
+.day[aria-checked="true"] small { color: var(--reed); opacity: .8; }
+.rules { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font-size: 13px; color: var(--muted); }
+.rules b { color: var(--ink); }
+
+.field { display: grid; gap: 6px; }
+.field label { font: 600 13px var(--body); }
+.field input { font: 500 16px var(--body); padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); width: 100%; }
+.field .hint { font-size: 12px; color: var(--muted); }
+.field.err input { border-color: var(--float); }
+.field .msg { font-size: 12px; color: var(--float); }
+.check { display: flex; gap: 10px; align-items: center; font-size: 14px; }
+.check input { width: 20px; height: 20px; accent-color: var(--lake-2); }
+.summary { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-size: 14px; }
+.summary .tot { font: 700 16px var(--body); border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
+.summary span:nth-child(even) { text-align: right; font-variant-numeric: tabular-nums; }
+.pays { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+.pay { padding: 12px 6px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--paper); color: var(--ink); font: 700 14px var(--body); cursor: pointer; }
+.pay[aria-checked="true"] { border-color: var(--lake-2); box-shadow: inset 0 0 0 1px var(--lake-2); }
+
+.wait { flex: 1; display: grid; place-items: center; text-align: center; gap: 16px; align-content: center; }
+.ring { width: 64px; height: 64px; border-radius: 50%; border: 5px solid var(--line); border-top-color: var(--float); animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ring { animation: none; border-top-color: var(--line); border-right-color: var(--float); } }
+
+.permit { background: var(--lake); color: var(--reed); border-radius: 20px; padding: 20px; display: grid; gap: 14px; position: relative; overflow: hidden; }
+.permit::after { content: ""; position: absolute; inset: auto -40px -60px auto; width: 180px; height: 180px; border-radius: 50%; border: 18px solid color-mix(in srgb, var(--reed) 8%, transparent); }
+.permit .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.valid { font: 700 11px var(--body); letter-spacing: .1em; text-transform: uppercase; background: var(--ok); color: #fff; padding: 5px 8px; border-radius: 6px; }
+.permit h3 { font: 800 22px/1.1 var(--display); margin: 0; }
+.permit dl { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin: 0; }
+.permit dt { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.permit dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.codebox { display: grid; grid-template-columns: 88px minmax(0,1fr); gap: 14px; align-items: center; background: var(--paper); color: var(--ink); border-radius: 12px; padding: 10px; position: relative; z-index: 1; }
+.codebox canvas { width: 88px; height: 88px; image-rendering: pixelated; }
+.codebox .code { font: 700 22px/1 var(--mono); letter-spacing: .08em; }
+.codebox small { color: var(--muted); font-size: 12px; display: block; margin-top: 6px; }
+.toast { position: absolute; left: 18px; right: 18px; bottom: 110px; background: var(--ink); color: var(--reed); padding: 12px 14px; border-radius: 12px; font-size: 14px; z-index: 5; }
+.rules-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+.rules p { margin: 0; }
+.langs { display: flex; gap: 4px; }
+.lang { border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 6px; padding: 3px 7px; font: 700 11px var(--body); cursor: pointer; }
+.lang[aria-pressed="true"] { background: var(--lake); color: var(--reed); border-color: var(--lake); }
+.lang:focus-visible { outline: 3px solid var(--lake-2); outline-offset: 2px; }
+.two { display: grid; grid-template-columns: 120px minmax(0,1fr); gap: 10px; }
+.prefill { font-size: 13px; background: var(--chip); color: var(--ink); border-radius: 10px; padding: 10px 12px; margin-top: -6px; }
+.err-check { color: var(--float); }
+.screen > .msg { font-size: 12px; color: var(--float); }
+table.compare td:first-child { font-weight: 600; width: 26%; }
+table.compare td:nth-child(2) { color: var(--muted); }
+table.compare td:last-child { white-space: normal; }
+.demo-note { text-align: center; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.demo-note button { background: none; border: 0; color: var(--lake-2); font: 600 12px var(--body); cursor: pointer; text-decoration: underline; padding: 0; }
+</style>
+
+<div class="wrap">
+  <main>
+    <div class="eyebrow">Konceptprototyp · fiskekortsköp</div>
+    <h1>Från “var fiskar jag?” till giltigt fiskekort på <em>30 sekunder</em>.</h1>
+    <p class="lede">Ett fristående köpflöde för digitala fiskekort. Tre steg, inget konto, Swish som standard och fiskekortet direkt i telefonen. Byggt för att kopplas på en befintlig försäljningsplattform via API.</p>
+    <p class="disclaimer">Detta är en oberoende designprototyp och ingen tjänst från iFiske. Vatten och priser är exempeldata från offentliga prislistor och iFiske.se (7 nov 2026) och kan vara inaktuella. Betalningen är simulerad.</p>
+
+    <section>
+      <h2>Samma köp, idag och i konceptet</h2>
+      <p class="sub" style="margin:0 0 12px">Dagkort 06–22, Mellansjön Värmdö, 200 kr. Dokumenterat på iPhone 7 nov 2026, fram till köpformuläret. Betalsteget ingår inte i underlaget.</p>
+      <div class="tablebox">
+        <table class="kpi compare">
+          <thead><tr><th></th><th>Idag</th><th>Konceptet</th></tr></thead>
+          <tbody>
+            <tr><td>Skärmar till första fältet</td><td>6: start, karta, kortlista, info, regler, formulär</td><td>2: vatten, kassa</td></tr>
+            <tr><td>Tryck före första fältet</td><td>6 (sök på kartan, välj område, lägg i varukorg, nästa, kryssa i regler, nästa)</td><td>2, eller 1 med “Köp igen”</td></tr>
+            <tr><td>Regler</td><td>Visas tre gånger. I formuläret staplade på flera språk ovanför fälten</td><td>En gång, kort, på valt språk</td></tr>
+            <tr><td>Fält</td><td>Mobil, namn, reg.nr, gatuadress, postnummer och fler under skärmkanten</td><td>Samma krav där föreningen kräver dem, ifyllda från förra köpet</td></tr>
+            <tr><td>Datum</td><td>Textfält, 2026-11-07</td><td>Idag förvalt, en rad dagar</td></tr>
+            <tr><td>Varukorg</td><td>Krävs för ett enda dagkort</td><td>Direktköp. “Köp ett till” efteråt</td></tr>
+            <tr><td>Utseende</td><td>Två olika designer i samma köp. Formuläret är bredare än skärmen och text klipps i kanten</td><td>En design, byggd för mobil</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Flödet</h2>
+      <ol class="steps">
+        <li><div><b>Hitta vattnet</b><span>Sök på sjö, ort eller förening. Senaste köpet ligger överst som “Köp igen”, ett tryck.</span></div></li>
+        <li><div><b>Välj kort och dag</b><span>Dagkort för idag är förvalt eftersom det är det vanligaste köpet. Priset syns hela tiden i knappen.</span></div></li>
+        <li><div><b>Betala</b><span>Bara de fält föreningen kräver, ifyllda från förra köpet. Reglerna en gång, på ditt språk. Swish förvalt. Inget konto, ingen varukorg.</span></div></li>
+        <li><div><b>Fiskekortet</b><span>Visas direkt med kontrollkod för fisketillsyningsman, skickas som SMS och kan läggas i Wallet.</span></div></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Designprinciper</h2>
+      <div class="principles">
+        <div><b>Smarta förval</b><span>Det mest köpta kortet och dagens datum är redan valda. De flesta behöver bara trycka på knappen.</span></div>
+        <div><b>Gästköp först</b><span>Kontot skapas i efterhand från mobilnumret, aldrig som spärr före betalning.</span></div>
+        <div><b>Gjord för stranden</b><span>Stora tryckytor, hög kontrast i solljus och en primärknapp per skärm, nåbar med tummen.</span></div>
+        <div><b>Kontroll offline</b><span>Kontrollkoden fungerar utan täckning. Tillsyningsmannen ser kod, namn och giltighetstid.</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Vad vi mäter i en pilot</h2>
+      <div class="tablebox">
+        <table class="kpi">
+          <thead><tr><th>Mått</th><th>Varför</th><th>Mål</th></tr></thead>
+          <tbody>
+            <tr><td>Konvertering vatten → betalt</td><td>Huvudmåttet för köpflödet</td><td>Mäts mot baslinje</td></tr>
+            <tr><td>Tid till giltigt kort</td><td>Köpet sker ofta vid vattnet</td><td>&lt; 30 s</td></tr>
+            <tr><td>Avbrott i kassan</td><td>Visar var formuläret friktar</td><td>Halveras</td></tr>
+            <tr><td>Återköp inom 30 dagar</td><td>Effekten av “Köp igen”</td><td>Mäts mot baslinje</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <aside class="stage" aria-label="Klickbar prototyp">
+    <div class="phone" id="phone">
+      <div class="bar">
+        <button class="back" id="back" aria-label="Tillbaka">‹</button>
+        <div class="ttl" id="ttl">Fiskekort</div>
+        <div class="prog" id="prog" aria-hidden="true"><i></i><i></i><i></i></div>
+      </div>
+      <div class="screen" id="screen"></div>
+      <div class="cta-bar" id="cta"></div>
+    </div>
+    <p class="demo-note">Klickbar demo · <button id="restart">Börja om</button></p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  // Example data from public price lists; purely illustrative.
+  const AREAS = [
+    { id: "mell", name: "Mellansjön Värmdö", place: "Värmdö · Stockholm", species: [], tags: ["Max 2 fiskar/dag", "Båtuthyrning"],
+      needs: { reg: true, address: true },
+      rules: { sv: "Max två fiskar per dag. Ett extra kort går att köpa, men då gäller endast catch & release. Max två kort per dag.",
+               en: "Max two fish per day. You can buy one extra permit, but it is catch and release only. Max two permits per day.",
+               pl: "Maksymalnie dwie ryby dziennie. Można wykupić dodatkową kartę, ale wtedy obowiązuje wyłącznie zasada złów i wypuść oraz haczyki bezzadziorowe. Maksymalnie dwie karty dziennie." },
+      cards: [ { id: "d", name: "Dagkort", desc: "Vald dag 06:00–22:00", price: 200, days: 1, top: true } ] },
+    { id: "holm", name: "Holms FVO", place: "Sundsvall · Västernorrland", species: ["Abborre", "Gädda", "Öring"],
+      rules: "Fångstbegränsning gäller för öring. Läs föreningens regler innan fiske.",
+      cards: [ { id: "d", name: "Dagkort", desc: "Gäller hela kalenderdagen", price: 100, days: 1, top: true },
+               { id: "v", name: "Veckokort", desc: "7 dagar från valt datum", price: 150, days: 7 },
+               { id: "a", name: "Årskort", desc: "Kalenderåret ut", price: 300, days: 365 } ] },
+    { id: "flian", name: "Flian Övre", place: "Skara · Västra Götaland", species: ["Abborre", "Gädda"],
+      rules: "Fiske med handredskap. Kontrollera föreningens regler för båt och nät.",
+      cards: [ { id: "d", name: "Dagkort", desc: "Gäller hela kalenderdagen", price: 40, days: 1, top: true },
+               { id: "v", name: "Veckokort", desc: "7 dagar från valt datum", price: 100, days: 7 },
+               { id: "a", name: "Årskort", desc: "Kalenderåret ut", price: 200, days: 365 } ] },
+    { id: "hunne", name: "Hunneberg", place: "Vänersborg · Västra Götaland", species: ["Regnbåge", "Abborre"],
+      rules: "Gäller utvalda sjöar på Hunneberg. Se karta och regler hos föreningen.",
+      cards: [ { id: "d", name: "Dagkort", desc: "Gäller hela kalenderdagen", price: 80, days: 1, top: true } ] },
+    { id: "sims", name: "Simsjön", place: "Billingen, Skövde · Västra Götaland", species: ["Regnbåge", "Öring"],
+      rules: "Put-and-take-vatten. Fångstbegränsning per kort enligt föreningens regler.",
+      cards: [ { id: "d", name: "Dagkort", desc: "Gäller hela kalenderdagen", price: 100, days: 1, top: true } ] },
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const kr = (n) => n.toLocaleString("sv-SE") + " kr";
+  const WD = ["sön", "mån", "tis", "ons", "tor", "fre", "lör"];
+  const MO = ["jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+  const fmt = (d) => d.getDate() + " " + MO[d.getMonth()];
+
+  const initial = () => ({ view: "find", q: "", filter: "Alla", area: null, card: null, dayOffset: 0, lang: "sv",
+    phone: "070 123 45 67", name: "Alex Lindqvist", email: "", reg: "ABC 123", street: "Exempelvägen 4", zip: "123 45", city: "Exempelby",
+    accept: false, prefilled: true, save: true, pay: "Swish", tried: false, code: null });
+  const rulesOf = (a) => (typeof a.rules === "string" ? { sv: a.rules } : a.rules);
+  const RULE_TITLE = { sv: "Regler i korthet", en: "Rules in brief", pl: "Zasady w skrócie" };
+  let S = initial();
+
+  function go(view) { S.view = view; render(); $("screen").scrollTop = 0; }
+
+  function setChrome(title, step, backTo) {
+    $("ttl").textContent = title;
+    [...$("prog").children].forEach((el, i) => el.classList.toggle("on", i < step));
+    $("prog").style.visibility = step ? "visible" : "hidden";
+    const b = $("back"); b.disabled = !backTo; b.onclick = backTo ? () => go(backTo) : null;
+  }
+
+  function pickArea(id) {
+    S.area = AREAS.find((a) => a.id === id);
+    S.card = S.area.cards.find((c) => c.top).id; S.dayOffset = 0; go("area");
+  }
+
+  // ---------- screens ----------
+  function find() {
+    setChrome("Fiskekort", 0, null);
+    const q = S.q.trim().toLowerCase();
+    const list = AREAS.filter((a) => (S.filter === "Alla" || a.place.includes(S.filter)) &&
+      (!q || (a.name + " " + a.place + " " + a.species.join(" ")).toLowerCase().includes(q)));
+    $("screen").innerHTML = `
+      <h2 class="h">Var vill du fiska?</h2>
+      <button class="again" id="again"><small>Köp igen · senast 14 sep</small><b>Mellansjön Värmdö, dagkort</b><span>200 kr</span></button>
+      <div class="search"><span aria-hidden="true">⌕</span>
+        <input id="q" type="search" placeholder="Sjö, ort eller förening" value="${esc(S.q)}" aria-label="Sök vatten" autocomplete="off"></div>
+      <div class="chips" role="group" aria-label="Län">
+        ${["Alla", "Stockholm", "Västra Götaland", "Västernorrland"].map((c) => `<button class="chip" data-f="${c}" aria-pressed="${S.filter === c}">${c}</button>`).join("")}
+      </div>
+      <div class="label">${list.length} vatten</div>
+      <div class="list" id="list">
+        ${list.length ? list.map((a) => `<button class="row" data-a="${a.id}"><b>${a.name}</b>
+          <span class="from">från <strong>${kr(Math.min(...a.cards.map((c) => c.price)))}</strong></span>
+          <small>${a.place}</small></button>`).join("")
+          : `<div class="empty">Inga vatten matchar “${esc(S.q)}”. Prova ort eller län i stället.</div>`}
+      </div>`;
+    $("cta").hidden = true;
+    $("again").onclick = () => pickArea("mell");
+    const qi = $("q");
+    qi.oninput = () => { S.q = qi.value; const pos = qi.selectionStart; find(); const n = $("q"); n.focus(); n.setSelectionRange(pos, pos); };
+    document.querySelectorAll("[data-f]").forEach((b) => (b.onclick = () => { S.filter = b.dataset.f; find(); }));
+    document.querySelectorAll("[data-a]").forEach((b) => (b.onclick = () => pickArea(b.dataset.a)));
+  }
+
+  function area() {
+    const a = S.area; const c = a.cards.find((x) => x.id === S.card);
+    setChrome(a.name, 1, "find");
+    const today = new Date();
+    const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(today); d.setDate(d.getDate() + i); return d; });
+    $("screen").innerHTML = `
+      <div class="area-head"><h2 class="h">${a.name}</h2><p class="sub" style="margin:0">${a.place}</p>
+        <div class="tags">${[...(a.tags || []), ...a.species].map((s) => `<span class="tag">${s}</span>`).join("")}</div></div>
+      <div class="label">Fiskekort</div>
+      <div class="opts" role="radiogroup" aria-label="Typ av fiskekort">
+        ${a.cards.map((x) => `<button class="opt" role="radio" data-c="${x.id}" aria-checked="${x.id === S.card}">
+          <span class="dot"></span><span><b>${x.name}${x.top ? '<span class="badge">Mest köpt</span>' : ""}</b><small>${x.desc}</small></span>
+          <span class="p">${kr(x.price)}</span></button>`).join("")}
+      </div>
+      <div class="label">${c.days === 365 ? "Giltigt från" : "Datum"}</div>
+      <div class="days" role="radiogroup" aria-label="Datum">
+        ${days.map((d, i) => `<button class="day" role="radio" data-d="${i}" aria-checked="${i === S.dayOffset}">
+          <small>${i === 0 ? "Idag" : i === 1 ? "Imorgon" : WD[d.getDay()]}</small><b>${d.getDate()}</b><small>${MO[d.getMonth()]}</small></button>`).join("")}
+      </div>
+      ${rulesBox(a)}`;
+    $("cta").hidden = false;
+    $("cta").innerHTML = `<button class="btn primary" id="next">Fortsätt · ${kr(c.price)}</button>`;
+    $("next").onclick = () => go("pay");
+    bindLang(area);
+    document.querySelectorAll("[data-c]").forEach((b) => (b.onclick = () => { S.card = b.dataset.c; area(); }));
+    document.querySelectorAll("[data-d]").forEach((b) => (b.onclick = () => { S.dayOffset = +b.dataset.d; area(); }));
+  }
+
+  function rulesBox(a) {
+    const R = rulesOf(a); const langs = Object.keys(R); const l = R[S.lang] ? S.lang : "sv";
+    return `<div class="rules"><div class="rules-top"><b>${RULE_TITLE[l]}</b>${langs.length > 1 ? `<span class="langs" role="group" aria-label="Språk">${langs.map((x) =>
+      `<button class="lang" data-l="${x}" aria-pressed="${x === l}">${x.toUpperCase()}</button>`).join("")}</span>` : ""}</div><p>${R[l]}</p></div>`;
+  }
+  function bindLang(rerender) { document.querySelectorAll("[data-l]").forEach((b) => (b.onclick = () => { S.lang = b.dataset.l; rerender(); })); }
+
+  function validity() {
+    const c = S.area.cards.find((x) => x.id === S.card);
+    const from = new Date(); from.setDate(from.getDate() + S.dayOffset);
+    let to = new Date(from);
+    if (c.days === 365) to = new Date(from.getFullYear(), 11, 31); else to.setDate(to.getDate() + c.days - 1);
+    return { c, from, to, label: c.days === 1 ? fmt(from) : fmt(from) + " – " + fmt(to) };
+  }
+  const phoneOk = () => /^(\+46|0)7\d{8}$/.test(S.phone.replace(/[\s-]/g, ""));
+  const nameOk = () => /\S+\s+\S+/.test(S.name.trim());
+  const regOk = () => /^[A-ZÅÄÖ]{3}\s?\d{2}[A-Z\d]$/i.test(S.reg.trim());
+  const streetOk = () => S.street.trim().length >= 3;
+  const zipOk = () => /^\d{3}\s?\d{2}$/.test(S.zip.trim());
+  const cityOk = () => S.city.trim().length >= 2;
+
+  function checks() {
+    const n = S.area.needs || {};
+    return [ ["ph", phoneOk], ["nm", nameOk], ...(n.reg ? [["rg", regOk]] : []),
+      ...(n.address ? [["st", streetOk], ["zp", zipOk], ["ct", cityOk]] : []), ["ok", () => S.accept] ];
+  }
+
+  function pay() {
+    const v = validity(); const n = S.area.needs || {};
+    setChrome("Betala", 2, "area");
+    const bad = (id) => S.tried && !checks().find((c) => c[0] === id)[1]();
+    const field = (id, label, key, attrs, hint, msg) => `<div class="field ${bad(id) ? "err" : ""}"><label for="${id}">${label}</label>
+        <input id="${id}" ${attrs} value="${esc(S[key])}">${bad(id) ? `<span class="msg">${msg}</span>` : hint ? `<span class="hint">${hint}</span>` : ""}</div>`;
+    $("screen").innerHTML = `
+      <h2 class="h">Vem fiskar?</h2>
+      ${S.prefilled ? '<div class="prefill">Ifyllt från ditt förra köp. Ändra det som inte stämmer.</div>' : ""}
+      ${field("ph", "Mobilnummer", "phone", 'type="tel" inputmode="tel" autocomplete="tel"', "Fiskekortet skickas hit som SMS.", "Ange ett svenskt mobilnummer, till exempel 070 123 45 67.")}
+      ${field("nm", "För- och efternamn", "name", 'type="text" autocomplete="name"', "", "Skriv både för- och efternamn så att kortet kan kontrolleras.")}
+      ${n.reg ? field("rg", "Registreringsnummer", "reg", 'type="text" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase"',
+        `${S.area.name} kräver det. Bilen du åker i, som förare eller passagerare.`, "Ange registreringsnummer som ABC 123 eller ABC 12A.") : ""}
+      ${n.address ? `${field("st", "Gatuadress", "street", 'type="text" autocomplete="street-address"', `${S.area.name} kräver adress på fiskekortet.`, "Ange gatuadress.")}
+        <div class="two">${field("zp", "Postnummer", "zip", 'type="text" inputmode="numeric" autocomplete="postal-code"', "", "Fem siffror.")}
+        ${field("ct", "Ort", "city", 'type="text" autocomplete="address-level2"', "", "Ange ort.")}</div>` : ""}
+      <div class="field"><label for="em">E-post <span style="color:var(--muted);font-weight:500">(valfritt, för kvitto)</span></label>
+        <input id="em" type="email" autocomplete="email" placeholder="namn@exempel.se" value="${esc(S.email)}"></div>
+      ${rulesBox(S.area)}
+      <label class="check ${bad("ok") ? "err-check" : ""}"><input id="ok" type="checkbox" ${S.accept ? "checked" : ""}> Jag har läst och godkänner reglerna</label>
+      ${bad("ok") ? '<span class="msg" style="margin-top:-10px">Godkänn reglerna för att fortsätta.</span>' : ""}
+      <label class="check"><input id="sv" type="checkbox" ${S.save ? "checked" : ""}> Kom ihåg mig till nästa köp</label>
+      <div class="summary">
+        <span>${v.c.name}, ${S.area.name}</span><span>${kr(v.c.price)}</span>
+        <span style="color:var(--muted)">Giltigt ${v.label}</span><span></span>
+        <span class="tot">Att betala</span><span class="tot">${kr(v.c.price)}</span></div>
+      <div class="label">Betalsätt</div>
+      <div class="pays" role="radiogroup" aria-label="Betalsätt">
+        ${["Swish", "Kort", "Apple Pay"].map((p) => `<button class="pay" role="radio" data-p="${p}" aria-checked="${S.pay === p}">${p}</button>`).join("")}</div>`;
+    $("cta").hidden = false;
+    $("cta").innerHTML = `<button class="btn primary" id="buy">Betala ${kr(v.c.price)} med ${S.pay}</button>
+      <div class="fine">Pengarna går till fiskevårdsområdet. Inget konto behövs.</div>`;
+    const bind = (id, key) => $(id) && ($(id).oninput = (e) => (S[key] = e.target.value));
+    bind("ph", "phone"); bind("nm", "name"); bind("em", "email"); bind("rg", "reg"); bind("st", "street"); bind("zp", "zip"); bind("ct", "city");
+    $("ok").onchange = (e) => (S.accept = e.target.checked);
+    $("sv").onchange = (e) => (S.save = e.target.checked);
+    bindLang(pay);
+    document.querySelectorAll("[data-p]").forEach((b) => (b.onclick = () => { S.pay = b.dataset.p; pay(); }));
+    $("buy").onclick = () => {
+      S.tried = true;
+      const first = checks().find((c) => !c[1]());
+      if (first) { pay(); $(first[0]).focus(); $(first[0]).scrollIntoView({ block: "center" }); return; }
+      go("wait");
+    };
+  }
+
+  function wait() {
+    setChrome("Betala", 2, null);
+    const msg = S.pay === "Swish" ? ["Öppna Swish", "Godkänn betalningen i Swish-appen. Vi väntar här."]
+      : S.pay === "Kort" ? ["Bekräftar kortet", "Det tar bara ett ögonblick."] : ["Apple Pay", "Bekräfta med Face ID eller Touch ID."];
+    $("screen").innerHTML = `<div class="wait"><div class="ring" role="status" aria-label="Väntar på betalning"></div>
+      <h2 class="h">${msg[0]}</h2><p class="sub" style="margin:0">${msg[1]}</p></div>`;
+    $("cta").hidden = false;
+    $("cta").innerHTML = `<button class="btn ghost" id="cancel">Avbryt</button>`;
+    const t = setTimeout(() => { S.code = makeCode(); go("done"); }, 1800);
+    $("cancel").onclick = () => { clearTimeout(t); go("pay"); };
+  }
+
+  function makeCode() {
+    const A = "ACDEFHJKLMNPRTUVWXY3479"; let s = "";
+    for (let i = 0; i < 6; i++) s += A[Math.floor(Math.random() * A.length)];
+    return s.slice(0, 3) + "-" + s.slice(3);
+  }
+
+  function done() {
+    const v = validity();
+    setChrome("Ditt fiskekort", 3, null);
+    $("screen").innerHTML = `
+      <div class="permit">
+        <div class="top"><span class="valid">${S.dayOffset === 0 ? "Giltigt nu" : "Giltigt från " + fmt(v.from)}</span><span style="font-size:13px;opacity:.8">${v.c.name}</span></div>
+        <h3>${S.area.name}</h3>
+        <dl><div><dt>Fiskare</dt><dd>${esc(S.name)}</dd></div><div><dt>Giltighet</dt><dd>${v.label}</dd></div>
+            <div><dt>Betalt</dt><dd>${kr(v.c.price)} · ${S.pay}</dd></div><div><dt>Mobil</dt><dd>${esc(S.phone)}</dd></div>
+            ${S.area.needs && S.area.needs.reg ? `<div><dt>Fordon</dt><dd>${esc(S.reg.toUpperCase())}</dd></div>` : ""}</dl>
+        <div class="codebox"><canvas id="qr" width="21" height="21" aria-hidden="true"></canvas>
+          <div><div class="code">${S.code}</div><small>Kontrollkod. Visa för fisketillsyningsman, fungerar utan täckning.</small></div></div>
+      </div>
+      <p class="sub" style="margin:0;text-align:center">Skickat som SMS till ${esc(S.phone)}${S.email ? " och kvitto till " + esc(S.email) : ""}.</p>
+      <button class="btn ghost" id="rules">Visa regler för ${S.area.name}</button>`;
+    drawCode($("qr"), S.code);
+    $("cta").hidden = false;
+    $("cta").innerHTML = `<button class="btn primary" id="wallet">Lägg till i Wallet</button>
+      <button class="btn ghost" id="friend">Köp ett till, för en vän</button>`;
+    $("wallet").onclick = () => toast("I skarp version läggs kortet till i Apple Wallet eller Google Wallet.");
+    $("rules").onclick = () => { const R = rulesOf(S.area); toast(R[S.lang] || R.sv); };
+    $("friend").onclick = () => { S.name = ""; S.tried = false; S.prefilled = false; go("pay"); };
+  }
+
+  // Decorative matrix seeded from the code; a real build would render a signed QR.
+  function drawCode(cv, code) {
+    const ctx = cv.getContext("2d"); const n = 21;
+    const fg = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#12262b";
+    let h = 2166136261; for (const ch of code) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+    const rnd = () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 1000) / 1000; };
+    ctx.clearRect(0, 0, n, n); ctx.fillStyle = fg;
+    const finder = (x, y) => { ctx.fillRect(x, y, 7, 7); ctx.clearRect(x + 1, y + 1, 5, 5); ctx.fillRect(x + 2, y + 2, 3, 3); };
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      const inF = (x < 8 && y < 8) || (x > 12 && y < 8) || (x < 8 && y > 12);
+      if (!inF && rnd() > 0.52) ctx.fillRect(x, y, 1, 1);
+    }
+    finder(0, 0); finder(14, 0); finder(0, 14);
+  }
+
+  let tt;
+  function toast(text) {
+    document.querySelectorAll(".toast").forEach((e) => e.remove());
+    const el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); el.textContent = text;
+    $("phone").appendChild(el); clearTimeout(tt); tt = setTimeout(() => el.remove(), 3200);
+  }
+
+  function render() { ({ find, area, pay, wait, done })[S.view](); }
+  $("restart").onclick = () => { S = initial(); render(); };
+  render();
+})();
+</script>
